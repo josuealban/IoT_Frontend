@@ -1,4 +1,4 @@
-package com.guasmoo.IoTFront
+package com.guasmo.IoTFront
 
 import android.app.Application
 import android.content.res.Configuration
