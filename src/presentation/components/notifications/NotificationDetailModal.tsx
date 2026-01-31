@@ -5,11 +5,11 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     Modal,
+    Platform,
     ScrollView,
     Text,
     TouchableOpacity,
-    View,
-    Platform
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,7 +27,10 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
-    if (!notification) return null;
+    // Solo renderizar el modal si hay una notificación
+    if (!notification) {
+        return null;
+    }
 
     const getIcon = (type: NotificationType) => {
         switch (type) {
@@ -95,11 +98,13 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
     });
 
     const handleGoToDevice = () => {
-        if (notification.alert?.deviceId) {
+        if (notification?.alert?.deviceId) {
             onClose();
             router.push(`/device/${notification.alert.deviceId}`);
         }
     };
+
+    console.log('📋 Notification data in modal:', JSON.stringify(notification, null, 2));
 
     return (
         <Modal
@@ -109,17 +114,18 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
             statusBarTranslucent
             onRequestClose={onClose}
         >
-            <View className="flex-1 bg-black/60 justify-end">
+            <View className="flex-1 bg-black/60 justify-center items-center px-4">
                 <TouchableOpacity 
                     style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} 
                     onPress={onClose}
                     activeOpacity={1}
                 />
                 <View 
-                    className="bg-slate-950 rounded-t-3xl border-t border-slate-800 w-full"
-                    style={{ 
-                        paddingBottom: insets.bottom,
-                        maxHeight: '90%'
+                    className="bg-slate-950 rounded-xl border border-slate-800 w-full"
+                    style={{
+                        paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
+                        maxHeight: '85%',
+                        minHeight: '70%'
                     }}
                 >
                     {/* Header */}
@@ -134,7 +140,11 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
+                    <ScrollView 
+                        className="px-6 pt-6" 
+                        showsVerticalScrollIndicator={false}
+                        style={{ flex: 1 }}
+                    >
                         {/* Icon and Type */}
                         <View className="items-center mb-6">
                             <View className={`w-20 h-20 rounded-full items-center justify-center mb-4 ${colors.bg} border-2 ${colors.border}`}>
@@ -162,86 +172,72 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
                         </View>
 
                         {/* Details */}
-                        <View className="bg-slate-900 rounded-xl overflow-hidden mb-4 border border-slate-800">
-                            <View className="flex-row justify-between p-4 border-b border-slate-800">
-                                <Text className="text-slate-400">Fecha y Hora</Text>
-                                <Text className="text-slate-50 font-medium text-right flex-1 ml-4">
+                        <View className="bg-slate-900 rounded-xl mb-4 border border-slate-800">
+                            <View className="p-4 border-b border-slate-800">
+                                <Text className="text-slate-400 mb-1">Fecha y Hora</Text>
+                                <Text className="text-slate-50 font-medium">
                                     {formattedDate}
                                 </Text>
                             </View>
-
-                            <View className="flex-row justify-between p-4 border-b border-slate-800">
-                                <Text className="text-slate-400">ID de Notificación</Text>
-                                <Text className="text-slate-50 font-medium">
-                                    #{notification.id}
-                                </Text>
-                            </View>
-
-                            {notification.alertId && (
-                                <View className="flex-row justify-between p-4 border-b border-slate-800">
-                                    <Text className="text-slate-400">ID de Alerta</Text>
-                                    <Text className="text-slate-50 font-medium">
-                                        #{notification.alertId}
-                                    </Text>
-                                </View>
-                            )}
-
-                            <View className="flex-row justify-between p-4">
-                                <Text className="text-slate-400">Estado de Envío</Text>
-                                <View className="flex-row items-center gap-2">
-                                    <View className={`w-2 h-2 rounded-full ${notification.sent ? 'bg-green-500' : 'bg-gray-500'}`} />
-                                    <Text className={notification.sent ? "text-green-500 font-medium" : "text-gray-500 font-medium"}>
-                                        {notification.sent ? 'Enviada' : 'Pendiente'}
-                                    </Text>
-                                </View>
-                            </View>
                         </View>
 
-                        {/* Alert Details if available */}
+                        {/* Alert Details */}
                         {notification.alert && (
                             <View className="bg-slate-900 rounded-xl p-5 mb-4 border border-slate-800">
                                 <Text className="text-slate-400 text-xs mb-4 uppercase tracking-wide">
                                     Información de la Alerta
                                 </Text>
 
-                                <View className="space-y-3">
-                                    <View className="mb-3">
-                                        <Text className="text-slate-400 text-xs mb-1">Tipo de Alerta</Text>
-                                        <Text className="text-slate-100 font-medium">
-                                            {notification.alert.alertType.replace('_', ' ')}
-                                        </Text>
-                                    </View>
-
-                                    <View className="mb-3">
-                                        <Text className="text-slate-400 text-xs mb-1">Severidad</Text>
-                                        <Text className={`font-bold ${notification.alert.severity === 'CRITICAL' ? 'text-red-500' :
-                                                notification.alert.severity === 'HIGH' ? 'text-orange-500' :
-                                                    notification.alert.severity === 'MEDIUM' ? 'text-yellow-500' :
-                                                        'text-blue-500'
-                                            }`}>
-                                            {notification.alert.severity}
-                                        </Text>
-                                    </View>
-
-                                    {notification.alert.gasValuePpm && (
-                                        <View className="mb-3">
-                                            <Text className="text-slate-400 text-xs mb-1">Concentración de Gas</Text>
-                                            <Text className="text-slate-100 font-medium">
-                                                {notification.alert.gasValuePpm.toFixed(2)} PPM
-                                            </Text>
-                                        </View>
-                                    )}
-
-                                    <View className="mb-3">
-                                        <Text className="text-slate-400 text-xs mb-1">Estado</Text>
-                                        <View className="flex-row items-center gap-2">
-                                            <View className={`w-2 h-2 rounded-full ${notification.alert.resolved ? 'bg-green-500' : 'bg-red-500'}`} />
-                                            <Text className={notification.alert.resolved ? "text-green-500 font-medium" : "text-red-500 font-medium"}>
-                                                {notification.alert.resolved ? 'Resuelta' : 'Activa'}
-                                            </Text>
-                                        </View>
-                                    </View>
+                                <View className="mb-4">
+                                    <Text className="text-slate-400 text-xs mb-1">Tipo de Alerta</Text>
+                                    <Text className="text-slate-100 font-medium text-base">
+                                        {notification.alert.alertType.replace('_', ' ')}
+                                    </Text>
                                 </View>
+
+                                <View className="mb-4">
+                                    <Text className="text-slate-400 text-xs mb-1">Severidad</Text>
+                                    <Text className={`font-bold text-base ${
+                                        notification.alert.severity === 'CRITICAL' ? 'text-red-500' :
+                                        notification.alert.severity === 'HIGH' ? 'text-orange-500' :
+                                        notification.alert.severity === 'MEDIUM' ? 'text-yellow-500' :
+                                        'text-blue-500'
+                                    }`}>
+                                        {notification.alert.severity}
+                                    </Text>
+                                </View>
+
+                                {notification.alert.gasValuePpm !== null && notification.alert.gasValuePpm !== undefined && (
+                                    <View className="mb-4">
+                                        <Text className="text-slate-400 text-xs mb-1">Concentración de Gas</Text>
+                                        <Text className="text-slate-100 font-medium text-base">
+                                            {notification.alert.gasValuePpm.toFixed(2)} PPM
+                                        </Text>
+                                    </View>
+                                )}
+
+                                {notification.alert.message && (
+                                    <View className="mb-4">
+                                        <Text className="text-slate-400 text-xs mb-1">Detalle</Text>
+                                        <Text className="text-slate-100 font-medium text-base">
+                                            {notification.alert.message}
+                                        </Text>
+                                    </View>
+                                )}
+
+                                {notification.alert.device && (
+                                    <View>
+                                        <Text className="text-slate-400 text-xs mb-1">Dispositivo</Text>
+                                        <Text className="text-slate-100 font-medium text-base">
+                                            {notification.alert.device.name}
+                                        </Text>
+                                        {notification.alert.device.location && (
+                                            <Text className="text-slate-400 text-xs mt-1">
+                                                📍 {notification.alert.device.location}
+                                            </Text>
+                                        )}
+                                    </View>
+                                )}
                             </View>
                         )}
 
@@ -253,24 +249,14 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
                                     className="bg-blue-600 rounded-xl p-4 items-center mb-3"
                                     activeOpacity={0.8}
                                 >
-                                    <View className="flex-row items-center gap-2">
-                                        <Ionicons name="cube-outline" size={20} color="#FFFFFF" />
+                                    <View className="flex-row items-center">
+                                        <Ionicons name="cube-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
                                         <Text className="text-white text-base font-semibold">
                                             Ver Dispositivo
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
                             )}
-
-                            <TouchableOpacity
-                                onPress={onClose}
-                                className="bg-slate-700 rounded-xl p-4 items-center"
-                                activeOpacity={0.8}
-                            >
-                                <Text className="text-white text-base font-semibold">
-                                    Cerrar
-                                </Text>
-                            </TouchableOpacity>
                         </View>
                     </ScrollView>
                 </View>
