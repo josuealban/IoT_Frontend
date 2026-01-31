@@ -4,14 +4,19 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  // Inicializar notificaciones
+  usePushNotifications();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#3b82f6', // primary color
+        tabBarActiveTintColor: isDark ? '#f8fafc' : '#0f172a', // white/slate-900
         headerShown: false,
         tabBarStyle: {
           backgroundColor: isDark ? '#1e293b' : '#ffffff',

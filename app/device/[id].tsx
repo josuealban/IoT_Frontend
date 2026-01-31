@@ -1,5 +1,6 @@
 // app/device/[id].tsx - CON TIPOS CORREGIDOS
 
+import { DeviceSettingsModal } from '@/components/DeviceSettingsModal';
 import { Device, DeviceStatus } from '@/interfaces/device';
 import deviceService from '@/services/deviceService';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +25,8 @@ export default function DeviceDetailScreen() {
     const [device, setDevice] = useState<Device | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    
+    const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+
     // ✅ TIPO CORRECTO para React Native/TypeScript
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const isFetchingRef = useRef(false);
@@ -45,14 +47,12 @@ export default function DeviceDetailScreen() {
         pollingIntervalRef.current = setInterval(() => {
             fetchDeviceDetails(true);
         }, POLLING_INTERVAL);
-        console.log(`🔄 Polling iniciado cada ${POLLING_INTERVAL / 1000}s`);
     };
 
     const stopPolling = () => {
         if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
             pollingIntervalRef.current = null;
-            console.log('⏹️ Polling detenido');
         }
     };
 
@@ -62,7 +62,7 @@ export default function DeviceDetailScreen() {
         try {
             isFetchingRef.current = true;
             const deviceId = typeof id === 'string' ? parseInt(id) : id[0] ? parseInt(id[0]) : 0;
-            
+
             if (!deviceId || isNaN(deviceId)) {
                 console.error('ID de dispositivo inválido:', id);
                 if (!isPolling) {
@@ -73,25 +73,22 @@ export default function DeviceDetailScreen() {
             }
 
             const data = await deviceService.getDeviceById(deviceId);
-            
+
             if (isPolling) {
-                const hasNewData = !device || 
+                const hasNewData = !device ||
                     device.sensorData?.[0]?.id !== data.sensorData?.[0]?.id ||
                     device.status !== data.status;
-                
-                if (hasNewData) {
-                    console.log('📊 Datos actualizados:', {
-                        status: data.status,
-                        lastReading: data.sensorData?.[0]?.gasConcentrationPpm,
-                        timestamp: new Date().toLocaleTimeString()
-                    });
+
+                // Solo loguear cuando hay cambios significativos
+                if (hasNewData && data.sensorData?.[0]) {
+                    console.log('📊 Datos actualizados');
                 }
             }
-            
+
             setDevice(data);
         } catch (error: any) {
             console.error('Error fetching device details:', error);
-            
+
             if (!isPolling) {
                 if (error?.response?.status === 404) {
                     Alert.alert(
@@ -117,10 +114,23 @@ export default function DeviceDetailScreen() {
         fetchDeviceDetails();
     };
 
+    const handleSaveSettings = async (settings: any) => {
+        if (!device) return;
+
+        try {
+            await deviceService.updateSettings(device.id, settings);
+            // Refrescar datos del dispositivo para mostrar la nueva configuración
+            await fetchDeviceDetails();
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            throw error;
+        }
+    };
+
     if (loading) {
         return (
             <SafeAreaView className="flex-1 bg-slate-950 justify-center items-center">
-                <ActivityIndicator size="large" color="#3b82f6" />
+                <ActivityIndicator size="large" color="#64748b" />
                 <Text className="text-slate-400 mt-4">Cargando dispositivo...</Text>
             </SafeAreaView>
         );
@@ -133,9 +143,9 @@ export default function DeviceDetailScreen() {
                     <Ionicons name="alert-circle-outline" size={32} color="#64748b" />
                 </View>
                 <Text className="text-slate-400 text-lg mb-2">Dispositivo no encontrado</Text>
-                <TouchableOpacity 
-                    onPress={() => router.back()} 
-                    className="mt-4 bg-blue-600 px-6 py-3 rounded-lg"
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    className="mt-4 bg-slate-700 px-6 py-3 rounded-lg"
                 >
                     <Text className="text-white font-medium">Volver</Text>
                 </TouchableOpacity>
@@ -170,12 +180,12 @@ export default function DeviceDetailScreen() {
         }
     };
 
-    const latestReading = device.sensorData && device.sensorData.length > 0 
-        ? device.sensorData[0] 
+    const latestReading = device.sensorData && device.sensorData.length > 0
+        ? device.sensorData[0]
         : null;
 
-    const isGasThresholdExceeded = latestReading && device.deviceSettings && 
-        latestReading.gasConcentrationPpm && 
+    const isGasThresholdExceeded = latestReading && device.deviceSettings &&
+        latestReading.gasConcentrationPpm &&
         latestReading.gasConcentrationPpm > device.deviceSettings.gasThresholdPpm;
 
     return (
@@ -189,35 +199,38 @@ export default function DeviceDetailScreen() {
                         {device.name}
                     </Text>
                     <View className="flex-row items-center gap-1 mt-1">
-                        <View className="w-2 h-2 rounded-full bg-green-500" />
-                        <Text className="text-green-500 text-xs font-medium">
+                        <View className="w-2 h-2 rounded-full bg-slate-400" />
+                        <Text className="text-slate-400 text-xs font-medium">
                             Actualizando cada {POLLING_INTERVAL / 1000}s
                         </Text>
                     </View>
                 </View>
-                <TouchableOpacity className="p-2 -mr-2">
+                <TouchableOpacity
+                    className="p-2 -mr-2"
+                    onPress={() => setSettingsModalVisible(true)}
+                >
                     <Ionicons name="settings-outline" size={24} color="#f8fafc" />
                 </TouchableOpacity>
             </View>
 
-            <ScrollView 
+            <ScrollView
                 className="flex-1 px-4 pt-6"
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        tintColor="#3b82f6"
-                        colors={['#3b82f6']}
+                        tintColor="#64748b"
+                        colors={['#64748b']}
                     />
                 }
             >
                 <View className="bg-slate-900 rounded-xl p-6 mb-6 border border-slate-800">
                     <View className="items-center mb-4">
                         <View className={`w-24 h-24 rounded-full items-center justify-center bg-slate-800 mb-3 border-4 ${getStatusBgColor(device.status)}`}>
-                            <Ionicons 
-                                name={device.status === DeviceStatus.ONLINE ? "cloud-done-outline" : "cloud-offline-outline"} 
-                                size={48} 
-                                color={getStatusIconColor(device.status)} 
+                            <Ionicons
+                                name={device.status === DeviceStatus.ONLINE ? "cloud-done-outline" : "cloud-offline-outline"}
+                                size={48}
+                                color={getStatusIconColor(device.status)}
                             />
                         </View>
                         <Text className={`text-xl font-bold ${getStatusColor(device.status)}`}>
@@ -234,9 +247,8 @@ export default function DeviceDetailScreen() {
                                 <View className="items-center flex-1 border-r border-slate-800">
                                     <Text className="text-slate-400 text-xs mb-1 uppercase tracking-wide">Concentración Gas</Text>
                                     <View className="flex-row items-center gap-2">
-                                        <Text className={`font-bold text-2xl ${
-                                            isGasThresholdExceeded ? 'text-red-500' : 'text-slate-50'
-                                        }`}>
+                                        <Text className={`font-bold text-2xl ${isGasThresholdExceeded ? 'text-red-500' : 'text-slate-50'
+                                            }`}>
                                             {latestReading.gasConcentrationPpm?.toFixed(0) || '--'}
                                             <Text className="text-sm text-slate-400 font-normal"> PPM</Text>
                                         </Text>
@@ -324,13 +336,13 @@ export default function DeviceDetailScreen() {
                     <View className="flex-row justify-between p-4">
                         <Text className="text-slate-400">Última conexión</Text>
                         <Text className="text-slate-50 font-medium">
-                            {device.lastSeen 
+                            {device.lastSeen
                                 ? new Date(device.lastSeen).toLocaleString('es-ES', {
                                     day: '2-digit',
                                     month: 'short',
                                     hour: '2-digit',
                                     minute: '2-digit'
-                                  })
+                                })
                                 : 'Nunca'
                             }
                         </Text>
@@ -385,36 +397,34 @@ export default function DeviceDetailScreen() {
                 {device.alerts && device.alerts.length > 0 ? (
                     <View className="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 mb-8">
                         {device.alerts.map((alert: any, index: number) => (
-                            <View 
-                                key={alert.id} 
+                            <View
+                                key={alert.id}
                                 className={`p-4 ${index !== device.alerts!.length - 1 ? 'border-b border-slate-800' : ''}`}
                             >
                                 <View className="flex-row items-start gap-3">
-                                    <View className={`w-10 h-10 rounded-full items-center justify-center ${
-                                        alert.severity === 'CRITICAL' ? 'bg-red-500/10' :
+                                    <View className={`w-10 h-10 rounded-full items-center justify-center ${alert.severity === 'CRITICAL' ? 'bg-red-500/10' :
                                         alert.severity === 'HIGH' ? 'bg-orange-500/10' :
-                                        alert.severity === 'MEDIUM' ? 'bg-yellow-500/10' :
-                                        'bg-blue-500/10'
-                                    }`}>
-                                        <Ionicons 
-                                            name="warning" 
-                                            size={20} 
+                                            alert.severity === 'MEDIUM' ? 'bg-yellow-500/10' :
+                                                'bg-blue-500/10'
+                                        }`}>
+                                        <Ionicons
+                                            name="warning"
+                                            size={20}
                                             color={
                                                 alert.severity === 'CRITICAL' ? '#ef4444' :
-                                                alert.severity === 'HIGH' ? '#f97316' :
-                                                alert.severity === 'MEDIUM' ? '#f59e0b' :
-                                                '#3b82f6'
-                                            } 
+                                                    alert.severity === 'HIGH' ? '#f97316' :
+                                                        alert.severity === 'MEDIUM' ? '#f59e0b' :
+                                                            '#3b82f6'
+                                            }
                                         />
                                     </View>
                                     <View className="flex-1">
                                         <View className="flex-row justify-between items-center mb-1">
-                                            <Text className={`text-xs font-bold uppercase ${
-                                                alert.severity === 'CRITICAL' ? 'text-red-500' :
+                                            <Text className={`text-xs font-bold uppercase ${alert.severity === 'CRITICAL' ? 'text-red-500' :
                                                 alert.severity === 'HIGH' ? 'text-orange-500' :
-                                                alert.severity === 'MEDIUM' ? 'text-yellow-500' :
-                                                'text-blue-500'
-                                            }`}>
+                                                    alert.severity === 'MEDIUM' ? 'text-yellow-500' :
+                                                        'text-blue-500'
+                                                }`}>
                                                 {alert.severity}
                                             </Text>
                                             <Text className="text-slate-500 text-xs">
@@ -452,6 +462,13 @@ export default function DeviceDetailScreen() {
                     </View>
                 )}
             </ScrollView>
+
+            <DeviceSettingsModal
+                visible={settingsModalVisible}
+                onClose={() => setSettingsModalVisible(false)}
+                settings={device?.deviceSettings || null}
+                onSave={handleSaveSettings}
+            />
         </SafeAreaView>
     );
 }
