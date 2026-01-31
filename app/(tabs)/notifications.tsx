@@ -1,7 +1,7 @@
-// app/(tabs)/notifications.tsx - CON TIPOS CORREGIDOS
-
+// app/(tabs)/notifications.tsx
 import { Notification } from '@/interfaces/notification';
 import notificationService from '@/services/notificationSensorService';
+import { NotificationDetailModal } from '@/src/presentation/components/notifications/NotificationDetailModal';
 import { NotificationItem } from '@/src/presentation/components/notifications/NotificationItem';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -21,8 +21,11 @@ export default function NotificationsScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [isScreenFocused, setIsScreenFocused] = useState(false);
+    
+    // Estados para el modal
+    const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
-    // ✅ TIPO CORRECTO para React Native/TypeScript
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const isFetchingRef = useRef(false);
 
@@ -70,7 +73,6 @@ export default function NotificationsScreen() {
                     console.log('🔔 Nuevas notificaciones:', {
                         nuevas: data.length - notifications.length,
                         total: data.length,
-                        noLeidas: data.filter(n => !n.read).length,
                         timestamp: new Date().toLocaleTimeString()
                     });
                 }
@@ -92,6 +94,19 @@ export default function NotificationsScreen() {
     const onRefresh = () => {
         setRefreshing(true);
         fetchNotifications();
+    };
+
+    const handleNotificationPress = (notification: Notification) => {
+        setSelectedNotification(notification);
+        setModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalVisible(false);
+        // Pequeño delay antes de limpiar para que la animación de cierre se vea bien
+        setTimeout(() => {
+            setSelectedNotification(null);
+        }, 300);
     };
 
     const groupNotifications = (notifs: Notification[]) => {
@@ -120,18 +135,15 @@ export default function NotificationsScreen() {
     };
 
     const sections = groupNotifications(notifications);
-    const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
         <SafeAreaView className="flex-1 bg-slate-950" edges={['top']}>
             <View className="flex-row justify-between items-center px-4 py-4 border-b border-slate-800">
                 <View>
                     <Text className="text-2xl font-bold text-slate-50">Notificaciones</Text>
-                    {unreadCount > 0 && (
-                        <Text className="text-slate-400 text-sm mt-1">
-                            {unreadCount} sin leer
-                        </Text>
-                    )}
+                    <Text className="text-slate-400 text-sm mt-1">
+                        {notifications.length} {notifications.length === 1 ? 'notificación' : 'notificaciones'}
+                    </Text>
                 </View>
                 {isScreenFocused && (
                     <View className="flex-row items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg">
@@ -155,9 +167,7 @@ export default function NotificationsScreen() {
                     renderItem={({ item }) => (
                         <NotificationItem
                             notification={item}
-                            onPress={() => {
-                                console.log('Notificación presionada:', item.id);
-                            }}
+                            onPress={() => handleNotificationPress(item)}
                         />
                     )}
                     renderSectionHeader={({ section: { title } }) => (
@@ -192,6 +202,13 @@ export default function NotificationsScreen() {
                     stickySectionHeadersEnabled={false}
                 />
             )}
+
+            {/* Modal de Detalle */}
+            <NotificationDetailModal
+                notification={selectedNotification}
+                visible={modalVisible}
+                onClose={handleCloseModal}
+            />
         </SafeAreaView>
     );
 }

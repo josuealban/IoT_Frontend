@@ -1,7 +1,5 @@
-// app/(tabs)/index.tsx - CON TIPOS CORREGIDOS
-
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -107,15 +105,10 @@ export default function HomeScreen() {
           <Text className="text-slate-400 text-sm font-medium">Bienvenido</Text>
           <Text className="text-slate-50 text-2xl font-bold">IoT Monitor</Text>
         </View>
-        {isScreenFocused && (
-          <View className="flex-row items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg">
-            <View className="w-2 h-2 rounded-full bg-green-500" />
-            <Text className="text-green-500 text-xs font-medium">
-              Actualizando
-            </Text>
-          </View>
-        )}
-      </View>
+          <TouchableOpacity onPress={() => router.push('/settings')} className="p-2 bg-slate-800 rounded-full">
+            <Feather name="settings" size={24} color="white" />      
+          </TouchableOpacity>
+        </View>
 
       <View className="flex-row gap-3 mb-2">
         <View className="flex-1 bg-blue-600/20 p-4 rounded-xl border border-blue-600/30">
