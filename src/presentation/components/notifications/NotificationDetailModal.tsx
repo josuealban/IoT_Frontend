@@ -8,8 +8,10 @@ import {
     ScrollView,
     Text,
     TouchableOpacity,
-    View
+    View,
+    Platform
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface NotificationDetailModalProps {
     notification: Notification | null;
@@ -23,6 +25,7 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
     onClose
 }) => {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     if (!notification) return null;
 
@@ -101,12 +104,24 @@ export const NotificationDetailModal: React.FC<NotificationDetailModalProps> = (
     return (
         <Modal
             visible={visible}
-            animationType="slide"
+            animationType="fade"
             transparent={true}
+            statusBarTranslucent
             onRequestClose={onClose}
         >
-            <View className="flex-1 bg-black/50 justify-end">
-                <View className="bg-slate-950 rounded-t-3xl max-h-[90%] border-t-2 border-slate-800">
+            <View className="flex-1 bg-black/60 justify-end">
+                <TouchableOpacity 
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} 
+                    onPress={onClose}
+                    activeOpacity={1}
+                />
+                <View 
+                    className="bg-slate-950 rounded-t-3xl border-t border-slate-800 w-full"
+                    style={{ 
+                        paddingBottom: insets.bottom,
+                        maxHeight: '90%'
+                    }}
+                >
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-6 py-4 border-b border-slate-800">
                         <Text className="text-lg font-bold text-slate-50">Detalle de Notificación</Text>
