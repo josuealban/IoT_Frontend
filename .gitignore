@@ -90,3 +90,6 @@ pnpm-lock.yaml
 expo-env.d.ts
 # @end expo-cligoogle-services.json
 android/app/google-services.json
+
+# iOS build
+ios/
