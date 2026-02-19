@@ -48,16 +48,16 @@ export default function SettingsScreen() {
     const loadUserData = async () => {
         try {
             setLoading(true);
-            
+
             if (!userId) {
-                console.error('No userId found');
+
                 Alert.alert('Error', 'No se pudo obtener la información del usuario');
                 return;
             }
 
             // Obtener datos del usuario desde el API
             const userData = await userServices.getUserById(userId);
-            
+
             setUserData(userData);
             setUsername(userData.username);
             setEmail(userData.email);
@@ -66,10 +66,10 @@ export default function SettingsScreen() {
             await SecureStore.setItemAsync('username', userData.username);
             await SecureStore.setItemAsync('email', userData.email);
 
-            console.log('✅ Datos del usuario cargados:', userData);
+
         } catch (error: any) {
-            console.error('Error loading user data:', error);
-            
+
+
             // Si falla el API, intentar cargar desde SecureStore
             try {
                 const storedUsername = await SecureStore.getItemAsync('username');
@@ -87,12 +87,12 @@ export default function SettingsScreen() {
                     setUserData(fallbackData);
                     setUsername(storedUsername);
                     setEmail(storedEmail);
-                    console.log('⚠️ Usando datos del SecureStore (fallback)');
+
                 } else {
                     Alert.alert('Error', 'No se pudo cargar la información del usuario');
                 }
             } catch (storageError) {
-                console.error('Error reading from SecureStore:', storageError);
+
                 Alert.alert('Error', 'No se pudo cargar la información del usuario');
             }
         } finally {
@@ -129,71 +129,21 @@ export default function SettingsScreen() {
             setEmail(updatedUser.email);
 
             Alert.alert('Éxito', 'Perfil actualizado correctamente');
-            console.log('✅ Perfil actualizado:', updatedUser);
+
         } catch (error: any) {
-            console.error('Error updating profile:', error);
-            
+
+
             let errorMessage = 'No se pudo actualizar el perfil';
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             }
-            
+
             Alert.alert('Error', errorMessage);
         } finally {
             setUpdating(false);
         }
     };
 
-    const handleChangePassword = async () => {
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            Alert.alert('Error', 'Completa todos los campos de contraseña');
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            Alert.alert('Error', 'Las contraseñas no coinciden');
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            Alert.alert('Error', 'La contraseña debe tener al menos 8 caracteres');
-            return;
-        }
-
-        if (!userData) {
-            Alert.alert('Error', 'No se pudo obtener la información del usuario');
-            return;
-        }
-
-        setUpdating(true);
-        try {
-            // Llamada al API para cambiar contraseña
-            await userServices.changePassword(userData.id, {
-                currentPassword,
-                newPassword
-            });
-
-            Alert.alert('Éxito', 'Contraseña cambiada correctamente');
-            
-            // Limpiar campos
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            
-            console.log('✅ Contraseña cambiada exitosamente');
-        } catch (error: any) {
-            console.error('Error changing password:', error);
-            
-            let errorMessage = 'No se pudo cambiar la contraseña';
-            if (error.response?.data?.message) {
-                errorMessage = error.response.data.message;
-            }
-            
-            Alert.alert('Error', errorMessage);
-        } finally {
-            setUpdating(false);
-        }
-    };
 
     const handleLogout = () => {
         Alert.alert(
@@ -237,134 +187,108 @@ export default function SettingsScreen() {
                     <View className="w-10" />
                 </View>
 
-                <ScrollView className="flex-1">
-                    <View className="p-4">
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                    <View className="p-5">
                         {/* User Info Card */}
-                        <View className="bg-slate-900 rounded-xl p-6 mb-6 border border-slate-800">
-                            <View className="items-center mb-4">
-                                <View className="w-20 h-20 rounded-full bg-blue-600 items-center justify-center mb-3">
-                                    <Text className="text-3xl text-white font-bold">
+                        <View className="bg-slate-900 rounded-2xl p-6 mb-8 border border-slate-800 items-center">
+                            <View className="mb-4">
+                                <View className="w-24 h-24 rounded-full bg-blue-600 items-center justify-center border-4 border-slate-800 shadow-xl">
+                                    <Text className="text-4xl text-white font-bold">
                                         {username.charAt(0).toUpperCase()}
                                     </Text>
                                 </View>
-                                <Text className="text-slate-50 text-xl font-bold">
-                                    {username}
-                                </Text>
-                                <Text className="text-slate-400 text-sm mt-1">
-                                    {email}
-                                </Text>
-                                {userData && (
-                                    <Text className="text-slate-500 text-xs mt-2">
-                                        Miembro desde {new Date(userData.createdAt).toLocaleDateString('es-ES', {
-                                            month: 'long',
-                                            year: 'numeric'
-                                        })}
+                                <View className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 rounded-full border-4 border-slate-900" />
+                            </View>
+
+                            <Text className="text-slate-50 text-2xl font-bold">
+                                {username}
+                            </Text>
+                            <Text className="text-slate-400 text-sm mt-1">
+                                {email}
+                            </Text>
+
+                            <View className="flex-row mt-6 pt-6 border-t border-slate-800 w-full justify-around">
+                                <View className="items-center">
+                                    <Text className="text-slate-50 font-bold">Activo</Text>
+                                    <Text className="text-slate-500 text-[10px] uppercase">Estado</Text>
+                                </View>
+                                <View className="items-center">
+                                    <Text className="text-slate-50 font-bold">
+                                        {new Date(userData?.createdAt || '').toLocaleDateString('es-ES', { year: 'numeric' })}
                                     </Text>
-                                )}
+                                    <Text className="text-slate-500 text-[10px] uppercase">Desde</Text>
+                                </View>
                             </View>
                         </View>
 
                         {/* Editar Perfil */}
-                        <Text className="text-slate-400 text-sm font-bold mb-3 uppercase tracking-wider">
-                            Editar Perfil
-                        </Text>
+                        <View className="mb-8">
+                            <Text className="text-slate-500 text-[10px] font-bold mb-3 uppercase tracking-[2px] ml-1">
+                                Información de la Cuenta
+                            </Text>
+                            <View className="bg-slate-900 rounded-2xl p-5 border border-slate-800">
+                                <Input
+                                    label="Nombre de usuario"
+                                    placeholder="Tu nombre"
+                                    value={username}
+                                    onChangeText={setUsername}
+                                    icon="person-outline"
+                                />
 
-                        <View className="bg-slate-900 rounded-xl p-4 mb-6 border border-slate-800">
-                            <Input
-                                label="Nombre de usuario"
-                                placeholder="Tu nombre"
-                                value={username}
-                                onChangeText={setUsername}
-                                icon="person"
-                            />
+                                <Input
+                                    label="Correo Electrónico"
+                                    placeholder="tu@email.com"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    icon="mail-outline"
+                                    keyboardType="email-address"
+                                />
 
-                            <Input
-                                label="Email"
-                                placeholder="tu@email.com"
-                                value={email}
-                                onChangeText={setEmail}
-                                icon="mail"
-                                keyboardType="email-address"
-                            />
-
-                            <TouchableOpacity
-                                onPress={handleUpdateProfile}
-                                disabled={updating}
-                                className={`bg-blue-600 rounded-xl p-4 items-center ${updating ? 'opacity-60' : ''}`}
-                                activeOpacity={0.8}
-                            >
-                                {updating ? (
-                                    <ActivityIndicator color="#FFFFFF" />
-                                ) : (
-                                    <Text className="text-white text-base font-semibold">
-                                        Guardar Cambios
-                                    </Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Cambiar Contraseña */}
-                        <Text className="text-slate-400 text-sm font-bold mb-3 uppercase tracking-wider">
-                            Cambiar Contraseña
-                        </Text>
-
-                        <View className="bg-slate-900 rounded-xl p-4 mb-6 border border-slate-800">
-                            <Input
-                                label="Contraseña actual"
-                                placeholder="••••••••"
-                                value={currentPassword}
-                                onChangeText={setCurrentPassword}
-                                icon="lock-closed"
-                                isPassword
-                            />
-
-                            <Input
-                                label="Nueva contraseña"
-                                placeholder="••••••••"
-                                value={newPassword}
-                                onChangeText={setNewPassword}
-                                icon="key"
-                                isPassword
-                            />
-
-                            <Input
-                                label="Confirmar contraseña"
-                                placeholder="••••••••"
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
-                                icon="key"
-                                isPassword
-                            />
-
-                            <TouchableOpacity
-                                onPress={handleChangePassword}
-                                disabled={updating}
-                                className={`bg-slate-700 rounded-xl p-4 items-center ${updating ? 'opacity-60' : ''}`}
-                                activeOpacity={0.8}
-                            >
-                                {updating ? (
-                                    <ActivityIndicator color="#FFFFFF" />
-                                ) : (
-                                    <Text className="text-white text-base font-semibold">
-                                        Cambiar Contraseña
-                                    </Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Logout Button */}
-                        <TouchableOpacity
-                            onPress={handleLogout}
-                            className="bg-red-600 rounded-xl p-4 items-center mb-8"
-                            activeOpacity={0.8}
-                        >
-                            <View className="flex-row items-center gap-2">
-                                <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
-                                <Text className="text-white text-base font-semibold">
-                                    Cerrar Sesión
-                                </Text>
+                                <TouchableOpacity
+                                    onPress={handleUpdateProfile}
+                                    disabled={updating}
+                                    className={`bg-blue-600 rounded-xl py-4 items-center mt-2 shadow-lg shadow-blue-500/20 ${updating ? 'opacity-60' : ''}`}
+                                    activeOpacity={0.8}
+                                >
+                                    {updating ? (
+                                        <ActivityIndicator color="#FFFFFF" />
+                                    ) : (
+                                        <Text className="text-white text-base font-bold">
+                                            Actualizar Perfil
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
                             </View>
-                        </TouchableOpacity>
+                        </View>
+
+                        {/* Seguridad (Placeholder for future) */}
+                        <View className="mb-10">
+                            <Text className="text-slate-500 text-[10px] font-bold mb-3 uppercase tracking-[2px] ml-1">
+                                Sesión y Seguridad
+                            </Text>
+                            <View className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                                <TouchableOpacity
+                                    onPress={handleLogout}
+                                    className="flex-row items-center justify-between p-5 bg-red-500/5"
+                                    activeOpacity={0.6}
+                                >
+                                    <View className="flex-row items-center gap-3">
+                                        <View className="w-10 h-10 rounded-full bg-red-500/10 items-center justify-center">
+                                            <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+                                        </View>
+                                        <View>
+                                            <Text className="text-red-500 font-bold">Cerrar Sesión</Text>
+                                            <Text className="text-red-900/40 text-[10px]">Salir de tu cuenta en este dispositivo</Text>
+                                        </View>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={20} color="#ef4444" opacity={0.5} />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <Text className="text-center text-slate-700 text-[10px] uppercase font-bold tracking-widest mb-10">
+                            Guasmo IoT • Versión 1.2.0
+                        </Text>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

@@ -24,8 +24,13 @@ const RegisterScreen = () => {
 
     const handleRegister = async (): Promise<void> => {
 
-        if (!username.trim() || !email.trim() || !password.trim()) {
+        if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
             Alert.alert('Campos vacíos', 'Por favor completa todos los campos');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Las contraseñas no coinciden');
             return;
         }
 
@@ -98,6 +103,15 @@ const RegisterScreen = () => {
                                 placeholder="Mínimo 8 caracteres"
                                 value={password}
                                 onChangeText={setPassword}
+                                icon="lock-closed"
+                                isPassword
+                            />
+
+                            <Input
+                                label="Confirmar contraseña"
+                                placeholder="Repite tu contraseña"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
                                 icon="lock-closed"
                                 isPassword
                             />

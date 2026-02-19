@@ -29,9 +29,9 @@ export default function NotificationDetailScreen() {
     const fetchNotificationDetail = async () => {
         try {
             const notificationId = typeof id === 'string' ? parseInt(id) : id[0] ? parseInt(id[0]) : 0;
-            
+
             if (!notificationId || isNaN(notificationId)) {
-                console.error('ID de notificación inválido:', id);
+
                 Alert.alert('Error', 'ID de notificación inválido');
                 router.back();
                 return;
@@ -40,7 +40,7 @@ export default function NotificationDetailScreen() {
             // Obtener todas las notificaciones y buscar la específica
             const allNotifications = await notificationService.getNotifications();
             const found = allNotifications.find(n => n.id === notificationId);
-            
+
             if (found) {
                 setNotification(found);
             } else {
@@ -48,7 +48,7 @@ export default function NotificationDetailScreen() {
                 router.back();
             }
         } catch (error: any) {
-            console.error('Error fetching notification details:', error);
+
             Alert.alert('Error', 'No se pudo cargar la información de la notificación');
         } finally {
             setLoading(false);
@@ -73,37 +73,37 @@ export default function NotificationDetailScreen() {
     const getColors = (type: NotificationType) => {
         switch (type) {
             case NotificationType.ALERT:
-                return { 
-                    bg: 'bg-red-500/10', 
-                    icon: '#ef4444', 
+                return {
+                    bg: 'bg-red-500/10',
+                    icon: '#ef4444',
                     text: 'text-red-500',
                     border: 'border-red-500/20'
                 };
             case NotificationType.WARNING:
-                return { 
-                    bg: 'bg-yellow-500/10', 
-                    icon: '#f59e0b', 
+                return {
+                    bg: 'bg-yellow-500/10',
+                    icon: '#f59e0b',
                     text: 'text-yellow-500',
                     border: 'border-yellow-500/20'
                 };
             case NotificationType.SUCCESS:
-                return { 
-                    bg: 'bg-green-500/10', 
-                    icon: '#10b981', 
+                return {
+                    bg: 'bg-green-500/10',
+                    icon: '#10b981',
                     text: 'text-green-500',
                     border: 'border-green-500/20'
                 };
             case NotificationType.INFO:
-                return { 
-                    bg: 'bg-blue-500/10', 
-                    icon: '#3b82f6', 
+                return {
+                    bg: 'bg-blue-500/10',
+                    icon: '#3b82f6',
                     text: 'text-blue-500',
                     border: 'border-blue-500/20'
                 };
             default:
-                return { 
-                    bg: 'bg-slate-500/10', 
-                    icon: '#64748b', 
+                return {
+                    bg: 'bg-slate-500/10',
+                    icon: '#64748b',
                     text: 'text-slate-500',
                     border: 'border-slate-500/20'
                 };
@@ -126,8 +126,8 @@ export default function NotificationDetailScreen() {
                     <Ionicons name="alert-circle-outline" size={32} color="#64748b" />
                 </View>
                 <Text className="text-slate-400 text-lg mb-2">Notificación no encontrada</Text>
-                <TouchableOpacity 
-                    onPress={() => router.back()} 
+                <TouchableOpacity
+                    onPress={() => router.back()}
                     className="mt-4 bg-blue-600 px-6 py-3 rounded-lg"
                 >
                     <Text className="text-white font-medium">Volver</Text>
