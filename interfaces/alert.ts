@@ -14,11 +14,21 @@ export enum AlertSeverity {
     CRITICAL = 'CRITICAL'
 }
 
+export enum GasType {
+    LPG = 'LPG',
+    METHANE = 'METHANE',
+    ALCOHOL = 'ALCOHOL',
+    CO = 'CO',
+    SMOKE = 'SMOKE',
+    UNKNOWN = 'UNKNOWN'
+}
+
 export interface Alert {
     id: number;
     deviceId: number;
     alertType: AlertType;
     severity: AlertSeverity;
+    gasType: GasType | null;
     message: string;
     gasValuePpm: number | null;
     voltageValue: number | null;
@@ -28,3 +38,4 @@ export interface Alert {
     createdAt: string;
     device?: Device;
 }
+

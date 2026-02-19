@@ -7,14 +7,19 @@ export enum DeviceStatus {
 export interface DeviceSettings {
     id: number;
     deviceId: number;
-    gasThresholdPpm: number;
-    voltageThreshold: number;
+    mq2ThresholdPpm: number;
+    mq3ThresholdPpm: number;
+    mq5ThresholdPpm: number;
+    mq9ThresholdPpm: number;
+    mq2R0: number;
+    mq3R0: number;
+    mq5R0: number;
+    mq9R0: number;
     buzzerEnabled: boolean;
     ledEnabled: boolean;
     notifyUser: boolean;
     notificationCooldown: number;
     autoShutoff: boolean;
-    calibrationR0: number;
     updatedAt: string;
 }
 
@@ -44,6 +49,8 @@ export interface Device {
     createdAt: string;
     updatedAt: string;
     isActive: boolean;
+    windowStatus: boolean;
+    fanStatus: boolean;
     deviceSettings?: DeviceSettings;
     sensorData?: SensorData[];
     alerts?: any[]; // Usar 'any[]' temporalmente o importar Alert si es posible circular dependency
