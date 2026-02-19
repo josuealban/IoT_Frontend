@@ -26,15 +26,21 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
             const uid = await SecureStore.getItemAsync('userId');
             const refreshToken = await SecureStore.getItemAsync('refreshToken');
 
-            if (token && uid && refreshToken) {
+            if (token && uid) {
+                // 1. Autenticación Optimista: Asumimos que es válido para arranque rápido y offline
                 setIsAuthenticated(true);
                 setAccessToken(token);
                 setUserId(Number(uid));
-                console.log('Sesión activa restaurada');
+
+
+            } else {
+                setLoading(false);
             }
         } catch (error) {
-            console.error('Error checking auth status:', error);
+
+            setLoading(false);
         } finally {
+            // Asegurar que loading se apague
             setLoading(false);
         }
     };
@@ -53,7 +59,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 data
             );
 
-            console.log('Login response data:', JSON.stringify(responseData, null, 2));
+
 
             const {
                 accessToken: token,
@@ -80,17 +86,17 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
             return { success: true };
 
         } catch (error: any) {
-            console.error('Login error:', error);
+
 
             let errorMessage = 'No se pudo iniciar sesión';
 
             if (error.response) {
-                console.error('Server error response:', error.response.data);
+
                 errorMessage = error.response.data?.message || errorMessage;
             } else if (error.request) {
-                console.error('No response from server');
+
             } else {
-                console.error('Error setting up request:', error.message);
+
             }
 
             notificationService.error('Error de autenticación', errorMessage);
@@ -110,16 +116,39 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 password
             };
 
-            await apiService.createReqRes<RegisterRequest, any>(
+            const responseData = await apiService.createReqRes<RegisterRequest, AuthResponse>(
                 "/auth/register",
                 data
             );
 
-            notificationService.success('Registro exitoso', 'Por favor inicia sesión');
+            const {
+                accessToken: token,
+                refreshToken,
+                user,
+            } = responseData;
+
+            const uid = user?.id;
+
+            if (token && refreshToken && uid) {
+                // Guardar en SecureStore
+                await SecureStore.setItemAsync('accessToken', token);
+                await SecureStore.setItemAsync('refreshToken', refreshToken);
+                await SecureStore.setItemAsync('userId', String(uid));
+
+                // Actualizar el estado del contexto
+                setIsAuthenticated(true);
+                setUserId(uid);
+                setAccessToken(token);
+
+                notificationService.success('Registro exitoso', 'Bienvenido al sistema');
+            } else {
+                notificationService.success('Registro exitoso', 'Por favor inicia sesión');
+            }
+
             return { success: true };
 
         } catch (error: any) {
-            console.error('Register error:', error);
+
             let errorMessage = 'No se pudo registrar el usuario';
 
             if (error.response) {
@@ -146,7 +175,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
             setAccessToken(null);
 
         } catch (err) {
-            console.error('Logout error:', err);
+
         } finally {
             setLoading(false);
         }

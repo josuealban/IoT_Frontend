@@ -25,11 +25,36 @@ export const usePushNotifications = () => {
         let token;
 
         if (Platform.OS === 'android') {
-            await Notifications.setNotificationChannelAsync('default', {
-                name: 'default',
-                importance: Notifications.AndroidImportance.MAX,
+            // Canal para alertas bajas
+            await Notifications.setNotificationChannelAsync('low', {
+                name: 'Alertas Bajas',
+                importance: Notifications.AndroidImportance.DEFAULT,
+                sound: 'low.mp3', // Referencia al archivo en res/raw
+                vibrationPattern: [0, 250],
+            });
+
+            // Canal para alertas medias
+            await Notifications.setNotificationChannelAsync('medium', {
+                name: 'Alertas Medias',
+                importance: Notifications.AndroidImportance.HIGH,
+                sound: 'medium.mp3',
                 vibrationPattern: [0, 250, 250, 250],
-                lightColor: '#FF231F7C',
+            });
+
+            // Canal para alertas altas
+            await Notifications.setNotificationChannelAsync('high', {
+                name: 'Alertas Altas',
+                importance: Notifications.AndroidImportance.MAX,
+                sound: 'high.mp3',
+                vibrationPattern: [0, 500, 200, 500],
+            });
+
+            // Canal para alertas críticas
+            await Notifications.setNotificationChannelAsync('critical', {
+                name: 'Alertas Críticas',
+                importance: Notifications.AndroidImportance.MAX,
+                sound: 'critical.mp3',
+                vibrationPattern: [0, 1000, 500, 1000],
             });
         }
 
@@ -41,7 +66,7 @@ export const usePushNotifications = () => {
                 finalStatus = status;
             }
             if (finalStatus !== 'granted') {
-                console.log('Final status not granted');
+
                 return;
             }
 
@@ -60,12 +85,12 @@ export const usePushNotifications = () => {
 
                 const tokenResponse = await Notifications.getDevicePushTokenAsync();
                 token = tokenResponse.data;
-                console.log('FCM Token:', token);
+
             } catch (e) {
-                console.log('Error getting push token:', e);
+
             }
         } else {
-            console.log('Must use physical device for Push Notifications');
+
         }
 
         return token;
@@ -78,10 +103,10 @@ export const usePushNotifications = () => {
                 // Enviar token al backend
                 try {
                     await apiService.create('/notifications/register-token', { token });
-                    console.log('Token registrado en backend exitosamente');
+
                 } catch (error) {
                     // Ignorar error si es 401 (no logueado) para evitar ruido
-                    console.log('Token no registrado (probablemente usuario no logueado)');
+
                 }
             }
         });
@@ -91,7 +116,7 @@ export const usePushNotifications = () => {
         });
 
         responseListener.current = Notifications.addNotificationResponseReceivedListener((response: Notifications.NotificationResponse) => {
-            console.log('Notification tapped:', response);
+
 
             // Extraer deviceId de los datos de la notificación
             const deviceId = response.notification.request.content.data?.deviceId;
