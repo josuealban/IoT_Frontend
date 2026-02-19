@@ -37,7 +37,7 @@ export const Input: React.FC<InputProps> = ({
     return (
         <View className="mb-4">
             {label && (
-                <Text className="text-sm font-medium text-gray-700 mb-2">
+                <Text className="text-sm font-medium text-slate-200 mb-2">
                     {label}
                 </Text>
             )}
