@@ -48,7 +48,7 @@ api.interceptors.response.use(
                     if (accessToken) {
                         // Guardar el nuevo token
                         await SecureStore.setItemAsync("accessToken", String(accessToken));
-                        console.log('Token refrescado correctamente');
+
                     }
 
                     // Reintentar la petición original con el nuevo token

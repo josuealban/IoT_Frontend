@@ -10,7 +10,7 @@ class NotificationService {
             const response = await api.get<Notification[]>('/notifications');
             return response.data;
         } catch (error) {
-            console.error('Error fetching notifications:', error);
+
             throw error;
         }
     }
@@ -23,7 +23,7 @@ class NotificationService {
             const response = await api.get<Notification[]>('/notifications/unread');
             return response.data;
         } catch (error) {
-            console.error('Error fetching unread notifications:', error);
+
             throw error;
         }
     }
@@ -35,7 +35,7 @@ class NotificationService {
         try {
             await api.patch(`/notifications/${id}/read`);
         } catch (error) {
-            console.error(`Error marking notification ${id} as read:`, error);
+
             throw error;
         }
     }
@@ -47,7 +47,19 @@ class NotificationService {
         try {
             await api.patch('/notifications/read-all');
         } catch (error) {
-            console.error('Error marking all notifications as read:', error);
+
+            throw error;
+        }
+    }
+
+    /**
+     * Resolver una alerta vinculada a una notificación
+     */
+    async resolveAlert(alertId: number): Promise<void> {
+        try {
+            await api.patch(`/sensor-data/alerts/${alertId}/resolve`, {});
+        } catch (error) {
+
             throw error;
         }
     }

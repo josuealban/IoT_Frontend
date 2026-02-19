@@ -33,7 +33,7 @@ class UserService {
             const response = await apiService.getAll<ApiResponse<User>>(endpoint);
             return response.data;
         } catch (error) {
-            console.error('Error fetching user by id:', error);
+
             throw error;
         }
     }
@@ -46,7 +46,7 @@ class UserService {
             const response = await api.patch<ApiResponse<User>>(`/users/${userId}`, data);
             return response.data.data;
         } catch (error) {
-            console.error('Error updating user profile:', error);
+
             throw error;
         }
     }
@@ -58,7 +58,7 @@ class UserService {
         try {
             await api.patch(`/users/${userId}/password`, data);
         } catch (error) {
-            console.error('Error changing password:', error);
+
             throw error;
         }
     }
