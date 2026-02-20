@@ -1,357 +1,361 @@
-# 🌐 IoT Front - Sistema de Monitoreo de Gas
+# 📱 IoTFront — Aplicación Móvil de Monitoreo IoT
 
-Frontend móvil para el sistema IoT de monitoreo de gas con sensores MQ2 y ESP32.
-
-## 📋 Descripción
-
-Aplicación móvil desarrollada con React Native y Expo Router que permite:
-- Monitorear dispositivos IoT en tiempo real
-- Visualizar lecturas de sensores de gas
-- Recibir alertas cuando se detectan niveles peligrosos
-- Gestionar configuraciones de dispositivos
-- Ver historial de lecturas y alertas
-
-## 🏗️ Stack Tecnológico
-
-- **Framework**: React Native con Expo 54
-- **Navegación**: Expo Router 6
-- **Estilos**: NativeWind (Tailwind CSS para React Native)
-- **HTTP Client**: Axios
-- **Autenticación**: JWT con SecureStore
-- **Lenguaje**: TypeScript
-
-## 📁 Estructura del Proyecto
-
-```
-IoTFront/
-├── app/                          # Rutas de la aplicación (Expo Router)
-│   ├── _layout.tsx              # Layout principal con AuthProvider
-│   ├── index.tsx                # Redirección inicial
-│   ├── login.tsx                # Ruta de login
-│   ├── register.tsx             # Ruta de registro
-│   └── (tabs)/                  # Rutas protegidas (tabs)
-├── config/
-│   └── Config.ts                # Configuración de API URL
-├── context/
-│   └── AuthContext.tsx          # Provider de autenticación
-├── hooks/
-│   └── useAuthContext.tsx       # Hook para acceder al contexto de auth
-├── interfaces/
-│   └── auth.ts                  # Interfaces de autenticación
-├── services/
-│   ├── api.ts                   # Configuración de Axios con interceptors
-│   └── authService.ts           # Servicio de autenticación
-├── src/
-│   └── presentation/
-│       ├── components/
-│       │   └── common/
-│       │       └── Input.tsx    # Componente de input reutilizable
-│       └── screens/
-│           └── auth/
-│               ├── LoginScreen.tsx
-│               └── RegisterScreen.tsx
-├── .env                         # Variables de entorno
-├── global.css                   # Estilos globales de Tailwind
-├── tailwind.config.js           # Configuración de Tailwind
-└── package.json
-```
-
-## 🚀 Instalación
-
-### Prerrequisitos
-
-- Node.js 18+ 
-- npm o yarn
-- Expo CLI
-- Android Studio (para Android) o Xcode (para iOS)
-
-### Pasos
-
-1. **Clonar el repositorio**
-```bash
-cd IoTFront
-```
-
-2. **Instalar dependencias**
-```bash
-npm install
-```
-
-3. **Configurar variables de entorno**
-
-Crear archivo `.env` en la raíz:
-```env
-EXPO_PUBLIC_API_URL=http://localhost:3000
-```
-
-> **Nota**: Para desarrollo en dispositivo físico, usa la IP de tu computadora:
-> ```env
-> EXPO_PUBLIC_API_URL=http://192.168.1.X:3000
-> ```
-
-4. **Iniciar el servidor de desarrollo**
-```bash
-npm start
-```
-
-5. **Ejecutar en dispositivo**
-- Escanea el código QR con Expo Go (Android/iOS)
-- O presiona `a` para Android o `i` para iOS
-
-## 🔐 Autenticación
-
-### Flujo de Autenticación
-
-1. **Login/Register**: Usuario ingresa credenciales
-2. **Backend valida** y retorna tokens JWT
-3. **Tokens se guardan** en SecureStore (encriptado)
-4. **Interceptor de Axios** agrega token automáticamente
-5. **Refresh automático** cuando el access token expira
-6. **NavigationGuard** protege rutas según estado de auth
-
-### Endpoints de Auth
-
-```typescript
-POST /auth/login
-Body: { email: string, password: string }
-Response: { accessToken, refreshToken, user }
-
-POST /auth/register
-Body: { username: string, email: string, password: string }
-Response: { accessToken, refreshToken, user }
-
-POST /auth/refresh
-Body: { refreshToken: string }
-Response: { accessToken }
-
-POST /auth/logout
-```
-
-## 🎨 Paleta de Colores
-
-El proyecto usa una paleta de colores específica para el sistema IoT:
-
-```javascript
-// Estados de Dispositivo
-online: '#10b981'       // Verde
-offline: '#6b7280'      // Gris
-maintenance: '#f59e0b'  // Amarillo
-
-// Severidad de Alertas
-severityLow: '#10b981'      // < 400 PPM
-severityMedium: '#f59e0b'   // 400-599 PPM
-severityHigh: '#f97316'     // 600-999 PPM
-severityCritical: '#ef4444' // >= 1000 PPM
-
-// UI Base (Dark Mode)
-background: '#0f172a'
-surface: '#1e293b'
-textPrimary: '#f8fafc'
-```
-
-## 📱 Pantallas Principales
-
-### 1. LoginScreen
-- Formulario de email y contraseña
-- Validación en tiempo real
-- Loading states
-- Navegación a registro
-- SafeAreaView para dispositivos nativos
-
-### 2. RegisterScreen
-- Formulario de registro completo
-- Validación de contraseñas coincidentes
-- Mínimo 8 caracteres
-- Navegación de regreso a login
-
-### 3. Dashboard (Próximamente)
-- Resumen de dispositivos
-- Alertas activas
-- Gráficas de tendencias
-
-### 4. Dispositivos (Próximamente)
-- Lista de dispositivos
-- Estado en tiempo real
-- Configuración de umbrales
-
-### 5. Alertas (Próximamente)
-- Historial de alertas
-- Filtros por severidad
-- Marcar como resueltas
-
-## 🔧 Componentes Reutilizables
-
-### Input Component
-
-```tsx
-<Input
-  label="Correo electrónico"
-  placeholder="Introduce tu correo"
-  value={email}
-  onChangeText={setEmail}
-  icon="mail"
-  keyboardType="email-address"
-  autoCapitalize="none"
-  isPassword={false}
-  error="Campo requerido"
-/>
-```
-
-**Props:**
-- `label`: Etiqueta del input
-- `placeholder`: Texto placeholder
-- `value`: Valor controlado
-- `onChangeText`: Callback de cambio
-- `icon`: Icono de Ionicons
-- `isPassword`: Toggle de visibilidad
-- `keyboardType`: Tipo de teclado
-- `autoCapitalize`: Capitalización automática
-- `error`: Mensaje de error
-
-## 🔄 Gestión de Estado
-
-### AuthContext
-
-```typescript
-interface AuthContextType {
-  isAuthenticated: boolean;
-  userId: number | null;
-  accessToken: string | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean }>;
-  register: (username: string, email: string, password: string) => Promise<{ success: boolean }>;
-  logout: () => Promise<void>;
-}
-```
-
-### Uso en componentes
-
-```tsx
-import { useAuthContext } from '@/hooks/useAuthContext';
-
-const MyComponent = () => {
-  const { isAuthenticated, login, logout } = useAuthContext();
-  
-  // Tu lógica aquí
-};
-```
-
-## 🌐 Servicios HTTP
-
-### API Service (Axios)
-
-El servicio de API incluye:
-- **Base URL** configurada desde .env
-- **Interceptor de Request**: Agrega token automáticamente
-- **Interceptor de Response**: Maneja refresh token automático
-- **Manejo de errores**: Limpia tokens si refresh falla
-
-```typescript
-// Ejemplo de uso
-import api from '@/services/api';
-
-const response = await api.get('/device');
-const devices = response.data;
-```
-
-## 🔒 Seguridad
-
-### SecureStore
-- Tokens almacenados de forma encriptada
-- No accesibles desde JavaScript
-- Protegidos por el sistema operativo
-
-### Tokens JWT
-- Access Token: 1 hora de validez
-- Refresh Token: 7 días de validez
-- Renovación automática
-
-### Rutas Protegidas
-- NavigationGuard verifica autenticación
-- Redirección automática a login si no autenticado
-- Redirección a tabs si ya autenticado
-
-## 📦 Scripts Disponibles
-
-```bash
-# Iniciar servidor de desarrollo
-npm start
-
-# Ejecutar en Android
-npm run android
-
-# Ejecutar en iOS
-npm run ios
-
-# Ejecutar en Web
-npm run web
-
-# Linting
-npm run lint
-```
-
-## 🐛 Troubleshooting
-
-### Error: "Cannot find module"
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Error: "Metro bundler failed"
-```bash
-npm start -- --clear
-```
-
-### Error: "Unable to resolve module"
-```bash
-watchman watch-del-all
-rm -rf node_modules
-npm install
-npm start -- --reset-cache
-```
-
-### Error de conexión con backend
-- Verifica que el backend esté corriendo en `http://localhost:3000`
-- Si usas dispositivo físico, cambia a IP local en `.env`
-- Verifica que no haya firewall bloqueando
-
-## 🔮 Próximas Características
-
-- [ ] Dashboard con estadísticas
-- [ ] Lista de dispositivos con estado en tiempo real
-- [ ] Gráficas de lecturas históricas
-- [ ] Centro de notificaciones
-- [ ] Configuración de dispositivos
-- [ ] Filtros avanzados de alertas
-- [ ] Modo oscuro/claro
-- [ ] Notificaciones push
-- [ ] Exportar datos a CSV
-
-## 📚 Recursos
-
-- [Expo Documentation](https://docs.expo.dev/)
-- [Expo Router](https://docs.expo.dev/router/introduction/)
-- [NativeWind](https://www.nativewind.dev/)
-- [React Navigation](https://reactnavigation.org/)
-- [Axios](https://axios-http.com/)
-
-## 👥 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto es privado y confidencial.
-
-## 📞 Contacto
-
-Para soporte o consultas, contacta al equipo de desarrollo.
+Sistema de monitoreo de gases en tiempo real para dispositivos ESP32 equipados con sensores MQ (MQ2, MQ3, MQ5, MQ9) y DHT11. Construido con **React Native (Expo)** y diseñado para recibir alertas push, visualizar datos en vivo vía WebSocket, y controlar actuadores de forma remota.
 
 ---
 
-**Desarrollado con ❤️ para el Sistema IoT de Monitoreo de Gas**
+## 📋 Tabla de Contenidos
+
+- [Características](#-características)
+- [Arquitectura](#-arquitectura)
+- [Stack Tecnológico](#-stack-tecnológico)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Requisitos Previos](#-requisitos-previos)
+- [Instalación](#-instalación)
+  - [Windows](#windows)
+  - [Linux](#linux)
+- [Configuración](#-configuración)
+- [Ejecución](#-ejecución)
+- [Construcción del APK](#-construcción-del-apk)
+- [Funcionalidades Detalladas](#-funcionalidades-detalladas)
+- [Variables de Entorno](#-variables-de-entorno)
+- [Screens y Navegación](#-screens-y-navegación)
+
+---
+
+## ✨ Características
+
+- 🔴 **Monitoreo en tiempo real** de 4 sensores de gas (MQ2, MQ3, MQ5, MQ9) + temperatura y humedad
+- 📊 **WebSocket** para datos instantáneos desde ESP32
+- 🔔 **Notificaciones push** (FCM) con sonidos personalizados por severidad (low, medium, high, critical)
+- 🎛️ **Control manual remoto** de actuadores (ventilador y ventana servo)
+- 🔐 **Autenticación JWT** con refresh token automático
+
+---
+
+## 🏗️ Arquitectura
+
+```
+┌─────────────┐     WebSocket      ┌──────────────┐     HTTP/WS     ┌──────────┐
+│   ESP32 +   │ ──────────────────▶│   Backend    │◀───────────────│  IoTFront │
+│  Sensores   │    Sensor Data     │  (NestJS)    │   REST + WS    │  (Expo)  │
+│  MQ2-MQ9    │ ──────────────────▶│  PostgreSQL  │───────────────▶│  React   │
+│  DHT11      │    HTTP Alertas    │  Firebase    │   Push (FCM)   │  Native  │
+└─────────────┘                    └──────────────┘                └──────────┘
+```
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Tecnología | Versión | Uso |
+|---|---|---|
+| React Native | 0.81.5 | Framework móvil |
+| Expo | ~54.0 | Plataforma de desarrollo |
+| TypeScript | ~5.9 | Tipado estático |
+| NativeWind | 4.x | Estilos (TailwindCSS) |
+| Axios | 1.7.x | Cliente HTTP |
+| Socket.io Client | 4.8.x | WebSocket en tiempo real |
+| Expo Notifications | 0.32.x | Push notifications (FCM) |
+| Expo Secure Store | 14.x | Almacenamiento seguro de tokens |
+| Expo Router | 6.x | Navegación file-based |
+
+---
+
+## 📂 Estructura del Proyecto
+
+```
+IoTFront/
+├── app/                          # Pantallas (file-based routing)
+│   ├── (tabs)/                   # Tab navigator
+│   │   ├── index.tsx             # Home — lista de dispositivos + alertas activas
+│   │   ├── notifications.tsx     # Centro de notificaciones
+│   │   └── _layout.tsx           # Layout del tab navigator
+│   ├── device/
+│   │   ├── [id].tsx              # Detalle de dispositivo (sensores en vivo, actuadores)
+│   │   └── add.tsx               # Agregar nuevo dispositivo
+│   ├── notification/
+│   │   └── [id].tsx              # Detalle de notificación
+│   ├── settings.tsx              # Configuración de perfil
+│   ├── login.tsx                 # Pantalla de login
+│   ├── register.tsx              # Pantalla de registro
+│   └── _layout.tsx               # Layout raíz + protección de rutas
+├── components/                   # Componentes compartidos
+│   └── DeviceSettingsModal.tsx   # Modal de configuración de dispositivo
+├── config/
+│   └── Config.ts                 # Configuración (API_URL desde env)
+├── constants/
+│   └── endpoints.ts              # Endpoints del API centralizados
+├── context/
+│   └── AuthContext.tsx            # Contexto de autenticación global
+├── hooks/
+│   ├── useAuthContext.ts          # Hook de autenticación
+│   └── usePushNotifications.ts   # Hook de notificaciones push (FCM)
+├── interfaces/                   # TypeScript interfaces
+│   ├── alert.ts                  # Tipos de alerta
+│   ├── auth.ts                   # Tipos de autenticación
+│   ├── device.ts                 # Tipos de dispositivo
+│   └── notification.ts           # Tipos de notificación
+├── services/                     # Capa de servicios (API)
+│   ├── api.ts                    # Instancia Axios + interceptors (refresh token)
+│   ├── apiService.ts             # Servicio genérico CRUD
+│   ├── authService.ts            # Servicio de autenticación
+│   ├── deviceService.ts          # Servicio de dispositivos
+│   ├── notificationSensorService.ts  # Servicio de notificaciones
+│   ├── notificationServices.ts   # Toast notifications (UI)
+│   ├── socketService.ts          # WebSocket con auto-reconexión
+│   └── userServices.ts           # Servicio de usuarios
+├── src/presentation/
+│   ├── components/               # Componentes reutilizables
+│   │   ├── common/Input.tsx      # Input estilizado
+│   │   ├── devices/DeviceCard.tsx # Tarjeta de dispositivo
+│   │   └── notifications/        # Componentes de notificaciones
+│   └── screens/                  # Pantallas adicionales
+│       ├── auth/RegisterScreen.tsx
+│       └── device/AddDeviceScreen.tsx
+├── android/app/src/main/res/raw/ # Sonidos de notificación
+│   ├── low.mp3
+│   ├── medium.mp3
+│   ├── high.mp3
+│   └── critical.mp3
+├── .env                          # Variables de entorno (NO se sube)
+├── .env.example                  # Ejemplo de variables de entorno
+├── app.json                      # Configuración Expo
+├── eas.json                      # Configuración EAS Build
+├── package.json                  # Dependencias
+└── tailwind.config.js            # Configuración TailwindCSS/NativeWind
+```
+
+---
+
+## 📌 Requisitos Previos
+
+- **Node.js** >= 18.x
+- **npm** >= 9.x
+- **Git**
+- **Expo CLI** (se instala con npx, no requiere instalación global)
+- **Android Studio** (para emulador) o un **dispositivo Android físico**
+- **Backend corriendo** (ver repositorio del backend)
+
+---
+
+## 🚀 Instalación
+
+### Windows
+
+```powershell
+# 1. Clonar el repositorio
+git clone https://github.com/Guasmo/IoTFront.git
+cd IoTFront
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Copiar archivo de entorno
+copy .env.example .env
+
+# 4. Editar .env con tu configuración
+# Usar tu editor preferido (notepad, VS Code, etc.)
+notepad .env
+
+# 5. Configurar la variable EXPO_PUBLIC_API_URL:
+#    - Emulador Android: http://10.0.2.2:3000
+#    - Dispositivo físico: http://TU_IP_LOCAL:3000
+#    - Producción: https://tu-dominio.com
+```
+
+### Linux
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Guasmo/IoTFront.git
+cd IoTFront
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Copiar archivo de entorno
+cp .env.example .env
+
+# 4. Editar .env con tu configuración
+nano .env  # o vim .env
+
+# 5. Configurar la variable EXPO_PUBLIC_API_URL:
+#    - Emulador Android: http://10.0.2.2:3000
+#    - Dispositivo físico: http://TU_IP_LOCAL:3000
+#    - Producción: https://tu-dominio.com
+```
+
+---
+
+## ⚙️ Configuración
+
+### Variables de Entorno (`.env`)
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `EXPO_PUBLIC_API_URL` | URL del backend API | `http://192.168.1.100:3000` |
+
+### Firebase (Push Notifications)
+
+1. Crear proyecto en [Firebase Console](https://console.firebase.google.com/)
+2. Agregar app Android con package name: `com.guasmo.IoTFront`
+3. Descargar `google-services.json` y colocarlo en la raíz del proyecto
+4. El archivo **NO se sube a git** (está en `.gitignore`)
+
+> ⚠️ **Importante**: Sin `google-services.json`, las notificaciones push no funcionarán, pero el resto de la app sí.
+
+---
+
+## ▶️ Ejecución
+
+### Modo desarrollo (con Expo Go o dev client)
+
+```bash
+# Iniciar servidor de desarrollo
+npx expo start
+
+# O directamente en Android
+npx expo start --android
+
+# Para dispositivo físico con QR code
+npx expo start --tunnel
+```
+
+### Con emulador Android Studio
+
+1. Abrir Android Studio → **Virtual Device Manager**
+2. Crear/Iniciar un emulador (API 33+ recomendado)
+3. Ejecutar: `npx expo run:android`
+
+### Con dispositivo físico
+
+1. Habilitar **Opciones de desarrollador** → **Depuración USB** en el dispositivo
+2. Conectar por USB
+3. Ejecutar: `npx expo run:android`
+
+> 📌 **Nota para dispositivo físico**: La variable `EXPO_PUBLIC_API_URL` debe apuntar a la IP local de tu PC (no `localhost`), y ambos deben estar en la misma red WiFi.
+
+---
+
+## 📦 Construcción del APK
+
+### Usando EAS Build (recomendado)
+
+```bash
+# Instalar EAS CLI
+npm install -g eas-cli
+
+# Iniciar sesión en Expo
+eas login
+
+# Build APK de desarrollo
+eas build --platform android --profile development
+
+# Build APK de preview (sin dev tools)
+eas build --platform android --profile preview
+
+# Build AAB de producción (Google Play)
+eas build --platform android --profile production
+```
+
+### Build local (sin EAS)
+
+```bash
+# Generar proyecto nativo
+npx expo prebuild
+
+# Compilar APK
+cd android && ./gradlew assembleRelease
+```
+
+---
+
+## 🔍 Funcionalidades Detalladas
+
+### 🏠 Home Screen
+
+- Muestra todos los dispositivos del usuario con su estado (Online/Offline)
+- Panel de alertas activas con indicadores de severidad
+- Acciones rápidas según el tipo de gas detectado
+- Polling automático cada 15 segundos
+
+### 📊 Device Detail Screen
+
+- Datos de sensores MQ en tiempo real vía **WebSocket**
+- Temperatura y humedad del DHT11
+- Control manual de **ventilador** (relé) y **ventana** (servo)
+- Historial de alertas con opción de resolver
+- Configuración de umbrales personalizados
+
+### 🔔 Notifications Screen
+
+- Centro de notificaciones agrupadas por día (Hoy/Ayer/Anterior)
+- Modal de detalle con información completa de la alerta
+- Resolver alertas directamente desde la notificación
+- Sonidos personalizados por severidad (low, medium, high, critical)
+
+### ⚙️ Settings Screen
+
+- Edición de perfil (nombre, email)
+- Información de la cuenta
+- Cierre de sesión seguro
+
+### 🔐 Autenticación
+
+- Login con email/contraseña
+- Registro de nuevos usuarios
+- JWT con refresh token automático (interceptor Axios)
+- Autenticación optimista (arranque rápido + validación en background)
+- Modo offline (mantiene sesión local si no hay red)
+
+---
+
+## 🗺️ Screens y Navegación
+
+```
+/                          → Redirect a /(tabs)
+/(tabs)/index              → Home (lista de dispositivos)
+/(tabs)/notifications      → Centro de notificaciones
+/device/[id]               → Detalle de dispositivo (sensores + actuadores)
+/device/add                → Agregar nuevo dispositivo
+/notification/[id]         → Detalle de notificación
+/settings                  → Configuración de perfil
+/login                     → Iniciar sesión
+/register                  → Crear cuenta
+```
+
+---
+
+## 🤝 Comunicación con el Backend
+
+| Endpoint | Método | Descripción |
+|---|---|---|
+| `/auth/login` | POST | Iniciar sesión |
+| `/auth/register` | POST | Registrar usuario |
+| `/auth/refresh` | POST | Refrescar token JWT |
+| `/auth/check-status` | GET | Verificar sesión activa |
+| `/device` | GET | Listar dispositivos del usuario |
+| `/device` | POST | Crear dispositivo |
+| `/device/:id` | GET | Obtener dispositivo con sensores y alertas |
+| `/device/:id` | PATCH | Actualizar dispositivo |
+| `/device/:id/settings` | PATCH | Actualizar configuración |
+| `/sensor-data/actuator` | POST | Control manual de actuadores |
+| `/sensor-data/alerts/:id/resolve` | PATCH | Resolver alerta |
+| `/notifications` | GET | Listar notificaciones |
+| `/notifications/register-token` | POST | Registrar token FCM |
+
+### WebSocket Events
+
+| Evento | Dirección | Descripción |
+|---|---|---|
+| `subscribe` | Client → Server | Suscribirse a un dispositivo |
+| `unsubscribe` | Client → Server | Desuscribirse |
+| `sensorUpdate` | Server → Client | Datos de sensores en tiempo real |
+| `actuatorCommand` | Server → Client | Comando de actuador |
+
+---
+
+## 📄 Licencia
+
+Este proyecto es parte de un trabajo de grado. Uso educativo.
