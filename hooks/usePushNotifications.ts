@@ -29,7 +29,7 @@ export const usePushNotifications = () => {
             await Notifications.setNotificationChannelAsync('low', {
                 name: 'Alertas Bajas',
                 importance: Notifications.AndroidImportance.DEFAULT,
-                sound: 'low.mp3', // Referencia al archivo en res/raw
+                sound: 'low', // Referencia al archivo en res/raw (sin .mp3)
                 vibrationPattern: [0, 250],
             });
 
@@ -37,7 +37,7 @@ export const usePushNotifications = () => {
             await Notifications.setNotificationChannelAsync('medium', {
                 name: 'Alertas Medias',
                 importance: Notifications.AndroidImportance.HIGH,
-                sound: 'medium.mp3',
+                sound: 'medium',
                 vibrationPattern: [0, 250, 250, 250],
             });
 
@@ -45,7 +45,7 @@ export const usePushNotifications = () => {
             await Notifications.setNotificationChannelAsync('high', {
                 name: 'Alertas Altas',
                 importance: Notifications.AndroidImportance.MAX,
-                sound: 'high.mp3',
+                sound: 'high',
                 vibrationPattern: [0, 500, 200, 500],
             });
 
@@ -53,7 +53,7 @@ export const usePushNotifications = () => {
             await Notifications.setNotificationChannelAsync('critical', {
                 name: 'Alertas Críticas',
                 importance: Notifications.AndroidImportance.MAX,
-                sound: 'critical.mp3',
+                sound: 'critical',
                 vibrationPattern: [0, 1000, 500, 1000],
             });
         }
