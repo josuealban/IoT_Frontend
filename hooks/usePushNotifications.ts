@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import { useAuthContext } from './useAuthContext';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -16,6 +17,7 @@ Notifications.setNotificationHandler({
 });
 
 export const usePushNotifications = () => {
+    const { isAuthenticated } = useAuthContext();
     const [expoPushToken, setExpoPushToken] = useState<string | undefined>();
     const [notification, setNotification] = useState<Notifications.Notification | undefined>();
     const notificationListener = useRef<Notifications.Subscription | null>(null);
@@ -87,7 +89,7 @@ export const usePushNotifications = () => {
                 token = tokenResponse.data;
 
             } catch (e) {
-
+                console.error("❌ Error obteniendo Push Token nativo:", e);
             }
         } else {
 
@@ -97,19 +99,7 @@ export const usePushNotifications = () => {
     }
 
     useEffect(() => {
-        registerForPushNotificationsAsync().then(async token => {
-            setExpoPushToken(token);
-            if (token) {
-                // Enviar token al backend
-                try {
-                    await apiService.create('/notifications/register-token', { token });
-
-                } catch (error) {
-                    // Ignorar error si es 401 (no logueado) para evitar ruido
-
-                }
-            }
-        });
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
         notificationListener.current = Notifications.addNotificationReceivedListener((notification: Notifications.Notification) => {
             setNotification(notification);
@@ -138,6 +128,19 @@ export const usePushNotifications = () => {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (expoPushToken && isAuthenticated) {
+            // Enviar token al backend solo si estamos autenticados y tenemos token
+            apiService.create('/notifications/register-token', { token: expoPushToken })
+                .then(() => {
+                    console.log('✅ Push Token registrado exitosamente en el backend');
+                })
+                .catch((error) => {
+                    console.error('❌ Error registrando Push Token:', error);
+                });
+        }
+    }, [expoPushToken, isAuthenticated]);
 
     return {
         expoPushToken,

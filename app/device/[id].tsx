@@ -315,26 +315,29 @@ export default function DeviceDetailScreen() {
         },
         {
             id: 'mq3', label: 'MQ3', gas: 'Alcohol',
-            ppm: realtimeData?.mq3?.ppm ?? device.deviceSettings?.mq3ThresholdPpm, // MQ3 a veces no está en history
+            ppm: realtimeData?.mq3?.ppm ?? undefined, // No hay histórico individual para MQ3
             threshold: device.deviceSettings?.mq3ThresholdPpm,
             icon: 'wine-outline' as const, color: '#a855f7', bgColor: 'bg-purple-500/10',
         },
         {
             id: 'mq5', label: 'MQ5', gas: 'Metano',
-            ppm: realtimeData?.mq5?.ppm ?? device.deviceSettings?.mq5ThresholdPpm,
+            ppm: realtimeData?.mq5?.ppm ?? undefined, // No hay histórico individual para MQ5
             threshold: device.deviceSettings?.mq5ThresholdPpm,
             icon: 'cloud-outline' as const, color: '#3b82f6', bgColor: 'bg-blue-500/10',
         },
         {
             id: 'mq9', label: 'MQ9', gas: 'Monóxido CO',
-            ppm: realtimeData?.mq9?.ppm ?? device.deviceSettings?.mq9ThresholdPpm,
+            ppm: realtimeData?.mq9?.ppm ?? undefined, // No hay histórico individual para MQ9
             threshold: device.deviceSettings?.mq9ThresholdPpm,
             icon: 'skull-outline' as const, color: '#ef4444', bgColor: 'bg-red-500/10',
         },
     ];
 
-    const displayTemp = realtimeData?.temperature ?? lastHistory?.temperature;
-    const displayHum = realtimeData?.humidity ?? lastHistory?.humidity;
+    // Si el WebSocket envía null/0 (NaN del DHT), usar el histórico o undefined
+    const wsTemp = realtimeData?.temperature;
+    const wsHum = realtimeData?.humidity;
+    const displayTemp = (wsTemp != null && wsTemp !== 0) ? wsTemp : lastHistory?.temperature ?? undefined;
+    const displayHum = (wsHum != null && wsHum !== 0) ? wsHum : lastHistory?.humidity ?? undefined;
     const hasAnyReading = realtimeData !== null || lastHistory !== null;
 
     return (

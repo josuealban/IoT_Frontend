@@ -8,10 +8,14 @@ import React, { useEffect } from 'react';
 
 import "../global.css";
 
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+
 function NavigationGuard() {
   const { isAuthenticated, loading } = useAuthContext();
   const segments = useSegments();
   const router = useRouter();
+
+  usePushNotifications(); // <-- Inicializar notificaciones globales
 
   useEffect(() => {
     if (loading) return;

@@ -4,14 +4,11 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
-import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  // Inicializar notificaciones
-  usePushNotifications();
 
   return (
     <Tabs

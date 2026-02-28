@@ -1,4 +1,4 @@
-package com.guasmo.IoTFront
+package com.josuealban.IoTFront
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
