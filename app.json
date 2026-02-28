@@ -13,7 +13,6 @@
       "bundleIdentifier": "com.guasmo.IoTFront"
     },
     "android": {
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -46,7 +45,8 @@
           }
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      "./plugins/withSoundFiles"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -55,7 +55,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "6b17ec17-d82d-4da0-9ac8-e2f82a486310"
+        "projectId": "5350b419-bdbf-4f03-80cd-b629fa36fa2f"
       }
     }
   }
