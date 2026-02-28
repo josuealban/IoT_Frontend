@@ -111,7 +111,17 @@ class DeviceService {
 
             throw error;
         }
+    /**
+     * Obtener historial de alertas del usuario
+     */
+    async getAlertHistory(): Promise < any[] > {
+            try {
+                const response = await apiService.getAll<ApiResponse<any[]>>('/sensor-data/history');
+                return response.data;
+            } catch(error) {
+                throw error;
+            }
+        }
     }
-}
 
 export default new DeviceService();
